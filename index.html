@@ -48,6 +48,7 @@ input[type=text]:focus,textarea:focus{border-color:var(--accent2)}
 .player-row{display:flex;gap:8px}
 .player-row input{flex:1}
 .player-row .btn{flex:0 0 auto}
+.player-row .gbtn{min-width:86px}
 .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .seg button{padding:12px 8px;font-size:14px;line-height:1.25}
 .seg button.on{background:linear-gradient(135deg,var(--accent),#d81b60);border-color:transparent;color:#fff}
@@ -133,6 +134,14 @@ details summary::after{content:" ▾";color:var(--muted)}
         <div class="val" id="perVal">10</div>
         <button class="btn sm" onclick="changePer(1)">＋</button>
         <span class="muted small" id="perHint"></span>
+      </div>
+      <div id="spiceSection">
+        <label>🌶️ How crazy should the deck be?</label>
+        <div class="seg" id="spiceSeg">
+          <button class="btn" data-spice="mild">😏 Mild<br><span class="small muted">mostly real-life flags</span></button>
+          <button class="btn" data-spice="mixed">🎭 Mixed<br><span class="small muted">a bit of everything</span></button>
+          <button class="btn" data-spice="wild">🦇 Unhinged<br><span class="small muted">coffins &amp; goats</span></button>
+        </div>
       </div>
     </div>
 
@@ -247,17 +256,36 @@ details summary::after{content:" ▾";color:var(--muted)}
   <div class="footer">Progress is saved on this device. One phone, pass it around. 📱</div>
 </div>
 
+<script src="data.js"></script>
 <script>
-const BUILTIN = ["Calls their mother during every date.","Still shares a Netflix account with their ex — and watches together.","Claps when the plane lands.","Has a framed photo of themselves in every room.","Says “I’m not really a dog person” while owning three cats named after dictators.","Never returns the shopping cart.","Has a secret second Instagram account dedicated entirely to pigeons.","Refuses to eat anything that is not beige.","Sends voice messages that are always longer than seven minutes.","Says “I hate drama” at least twice a day.","Owns a sword and keeps it next to the bed.","Has never changed their bedsheets themselves.","Still has their ex saved as “Future Husband/Wife”.","Corrects your grammar during arguments.","Brings their own pillow to every restaurant.","Starts every story with “When I was in Dubai…”","Has a tattoo of their own name.","Rates every date out of 10 before going home.","Refuses to use Wi‑Fi because they don’t trust it.","Only listens to one song. Ever.","Has 47 unread messages from their therapist.","Posts motivational quotes after every minor inconvenience.","Orders for you without asking what you want.","Has a spreadsheet ranking all their exes.","Still goes on family holidays with an ex.","Believes birthdays are a capitalist conspiracy.","Brings a protein shaker to weddings.","Has a pet snake called ‘Baby’.","Calls every waiter ‘boss’.","Leaves one bite of every meal ‘for luck’.","Has no chairs at home — only beanbags.","Says “I’m brutally honest” before insulting people.","Their phone wallpaper is a selfie of themselves.","Wears sunglasses indoors after sunset.","Has an emergency suitcase permanently packed for ‘when society collapses’.","Still uses their ex’s Spotify playlist every day.","Refuses to drink tap water anywhere in Europe.","Takes 35 selfies before ordering breakfast.","Has a favorite traffic light in the city.","Keeps every receipt they have ever received.","Asks your star sign before asking your name.","Has been banned from three different karaoke bars.","Only communicates with their sibling through memes.","Brings Monopoly to every romantic weekend.","Says they ‘don’t believe in labels’ after six months of dating.","Owns a life-size cardboard cutout of a celebrity.","Talks to their plants but ignores your messages.","Has an alarm at 5:00 a.m. but snoozes it until 8:30.","Keeps ketchup in the bathroom fridge.","Refuses to watch films made before 2015.","Introduces you as ‘my current partner’.","Still wears a wedding ring from a relationship that never happened.","Has a 12-step morning routine and judges yours.","Uses LinkedIn like a dating app.","Has named every appliance in their kitchen.","Claims they can ‘read people instantly’.","Never closes kitchen cupboards.","Keeps a bag of emergency glitter in the car.","Has a private ranking of all their friends’ relationships.","Sends “k” when angry and nothing else for 48 hours.","Has 19 identical black T-shirts and nothing else.","Insists pineapple belongs on every pizza.","Has a podcast nobody has ever heard of — including you.","Refers to themselves in the third person when stressed.","Brings their laptop on romantic dinners ‘just in case’.","Has never seen their bank balance and prefers it that way.","Says “I don’t do jealousy” while checking who liked your photos.","Owns six different air fryers.","Cries every time their football team loses.","Has matching outfits with their dog.","Calls their car ‘she’ and buys it birthday gifts.","Has a dedicated drawer for takeaway chopsticks.","Believes all problems can be solved with cold showers.","Has already chosen the names of your future children after the second date.","Deletes all messages immediately after reading them.","Still sends Facebook pokes.","Has three phones and won’t explain why.","Refuses to date anyone who doesn’t like their favorite cheese.","Has a tattoo in a language they do not speak.","Says “trust me” before every terrible idea.","Secretly records themselves sleeping to analyze the audio.","Keeps a folder called ‘Evidence’ on their desktop.","Has written a breakup speech ‘just in case’.","Flirts with customer-service chatbots.","Brings their own hot sauce everywhere and gets offended if you don’t use it.","Has a five-year plan for your relationship after one week.","Never watches the final episode of any TV series.","Owns more candles than plates.","Has a lucky spoon and refuses to use another one.","Thinks every waiter is secretly flirting with them.","Still has every photo of every ex displayed on an old phone.","Has fake arguments in the shower and usually wins.","Insists on being DJ at every party.","Has a favorite ex and tells you which one.","Wakes up before you just to check your horoscope.","Uses a baby voice when asking for favors.","Has a ‘no talking before coffee’ rule that lasts until lunch.","Celebrates monthly anniversaries with PowerPoint presentations.","Keeps screenshots of compliments people gave them.","Says “we need to talk” and then asks what you want for dinner."];
-
-const NAMES = ["Marco","Chloé","Sven","Bianca","Igor","Léa","Dmitri","Noémie","Kevin","Anouk","Raffaele","Svetlana","Jean-Claude","Mia","Bruno","Zoé","Tobias","Inès","Lars","Carmen","Fabrice","Yasmine","Olaf","Gloria"];
-const VIBES = ["a sommelier","a crypto trader","a yoga teacher","a dentist","a DJ","a banker","a ski instructor","a magician","a life coach","a chess grandmaster","an influencer","a pastry chef","a tax lawyer","a pilot","a beekeeper","a podcaster","a watchmaker","a mime"];
 const DISCOVER = ["on your first date","at their parents’ house","on a romantic weekend in Zermatt","when you checked their phone (oops)","at your best friend’s wedding","during a power cut","at the airport","on holiday in Mykonos","when their ex texted you","while assembling IKEA furniture together","at a fondue night","on their birthday","when you moved in together","at 3 a.m.","in front of your entire family"];
 
 const KEY = "redFlagsGameV2";
 let S = null;        // game state
 let history = [];    // undo snapshots (in-memory)
-let setup = { players:["",""], mode:"mix", per:10 };
+let setup = { players:["",""], genders:["m","f"], manual:[false,false], mode:"mix", per:10, spice:"mixed" };
+
+const SPICE = { mild:{1:5,2:4,3:1,4:0}, mixed:{1:3,2:3,3:2,4:2}, wild:{1:1,2:2,3:3,4:4} };
+const LEVEL_LABEL = {1:"🚩 Classic",2:"🚩🚩 Quirky",3:"🚩🚩🚩 Absurd",4:"🚩🚩🚩🚩 Completely unhinged"};
+const ALL_FLAGS = Object.entries(FLAGS).flatMap(([l,a])=>a.map(t=>({text:t,lvl:+l})));
+
+/* --- gender guess from first name (always editable with the He/She button) --- */
+const KNOWN_F = new Set(["alla","anna","maria","marie","sophie","chloe","chloé","lea","léa","emma","olga","irina","elena","julia","laura","sarah","camille","manon","ines","inès","zoe","zoé","noemie","noémie","anouk","carmen","yasmine","gloria","lucie","claire","alice","nina","eva","mia","lisa","kate","jane","ani","anahit","lilit","mariam","nare","gohar","hasmik","armine","astghik","siranush","gayane","karin","ruth","ingrid","astrid","esther","rachel","miriam","isabel","isabelle","nicole","michelle","danielle","catherine","caroline","charlotte","juliette","margaux","céline","celine","nathalie","sandrine","corinne","mélanie","melanie","aurélie","aurelie","delphine","sabine","beatrice","béatrice","ophélie","romy","selma","freya","rose","grace","kim","jess","jessica","amy","lily","chantal","agnès","agnes","solène","solene","maud","gwen","ketevan","nune","lusine","tatev","margarit","susanna","kristine"]);
+const KNOWN_M = new Set(["nikita","luca","andrea","sasha","misha","ilya","joshua","jonah","elia","mike","steve","dave","pierre","andre","andré","jose","josé","george","philippe","stephane","stéphane","jerome","jérôme","antoine","hervé","herve","clement","clément","rémy","remy","maxime","theo","théo","jean","jean-claude","jean-pierre","guillaume","vincent","laurent","eugene","eugène","claude","hugo","vagram","vahram","aram","arman","davit","tigran","gor","hayk","narek","armen","karen","garnik","ashot","levon","sergey","andrei","dmitri","player"]);
+function guessGender(name){
+  const n = (name||"").trim().toLowerCase().split(/[\s,]+/)[0];
+  if(!n) return "m";
+  if(KNOWN_F.has(n)) return "f";
+  if(KNOWN_M.has(n)) return "m";
+  if(/(a|ya|ia|ie|ine|elle|ette|anne|enne|ée)$/.test(n)) return "f";
+  return "m";
+}
+const gLabel = g => g==="f" ? "👩 She" : "👨 He";
+
+/* --- avoid repeating flags across games on this device --- */
+const SEEN_KEY = "redFlagsSeen";
+function loadSeen(){ try{ return new Set(JSON.parse(localStorage.getItem(SEEN_KEY)||"[]")); }catch(e){ return new Set(); } }
+function saveSeen(set){ try{ localStorage.setItem(SEEN_KEY, JSON.stringify([...set])); }catch(e){} }
 
 function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||"null"); }catch(e){ return null; } }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
@@ -278,28 +306,39 @@ function show(screen){
 function renderSetup(){
   $("playersList").innerHTML = setup.players.map((n,i)=>`
     <div class="player-row">
-      <input type="text" maxlength="20" placeholder="Player ${i+1}" value="${esc(n)}" oninput="setup.players[${i}]=this.value" />
+      <input type="text" maxlength="20" placeholder="Player ${i+1}" value="${esc(n)}" oninput="onName(${i},this.value)" />
+      <button class="btn sm gbtn" id="g${i}" onclick="toggleG(${i})" title="Tap to change">${gLabel(setup.genders[i])}</button>
       ${setup.players.length>2?`<button class="btn sm" onclick="removePlayer(${i})">✕</button>`:""}
     </div>`).join("");
   document.querySelectorAll("#modeSeg button").forEach(b=>{
     b.classList.toggle("on", b.dataset.mode===setup.mode);
     b.onclick=()=>{ setup.mode=b.dataset.mode; renderSetup(); };
   });
+  document.querySelectorAll("#spiceSeg button").forEach(b=>{
+    b.classList.toggle("on", b.dataset.spice===setup.spice);
+    b.onclick=()=>{ setup.spice=b.dataset.spice; renderSetup(); };
+  });
+  $("spiceSection").classList.toggle("hidden", setup.mode==="write");
   $("perVal").textContent = setup.per;
   const total = setup.per*setup.players.length;
   $("perHint").textContent = setup.mode==="write" ? `${total} in the hat` :
-    setup.mode==="mix" ? `${total} in the hat — blanks filled from the deck` : `${total} random flags from the deck`;
+    setup.mode==="mix" ? `${total} in the hat — blanks filled from the deck` : `${total} random flags from the deck of ${ALL_FLAGS.length}`;
 }
-function addPlayer(){ if(setup.players.length>=10) return toast("Max 10 players"); setup.players.push(""); renderSetup(); }
-function removePlayer(i){ setup.players.splice(i,1); renderSetup(); }
+function onName(i,v){
+  setup.players[i]=v;
+  if(!setup.manual[i]){ setup.genders[i]=guessGender(v); $("g"+i).textContent=gLabel(setup.genders[i]); }
+}
+function toggleG(i){ setup.genders[i] = setup.genders[i]==="f"?"m":"f"; setup.manual[i]=true; $("g"+i).textContent=gLabel(setup.genders[i]); }
+function addPlayer(){ if(setup.players.length>=10) return toast("Max 10 players"); setup.players.push(""); setup.genders.push(setup.players.length%2?"m":"f"); setup.manual.push(false); renderSetup(); }
+function removePlayer(i){ setup.players.splice(i,1); setup.genders.splice(i,1); setup.manual.splice(i,1); renderSetup(); }
 function changePer(d){ setup.per=Math.max(3,Math.min(20,setup.per+d)); renderSetup(); }
 
 function startSetup(){
   const names = setup.players.map((n,i)=>n.trim()||`Player ${i+1}`);
   S = {
     phase: setup.mode==="deck" ? "play" : "writing",
-    mode: setup.mode, per: setup.per,
-    players: names.map(n=>({ name:n, written:[], partners:[] })),
+    mode: setup.mode, per: setup.per, spice: setup.spice, usedNames: [],
+    players: names.map((n,i)=>({ name:n, gender: setup.genders[i]||guessGender(n), written:[], partners:[] })),
     writer: 0, hat: [], turn: 0, current: null, needNewPartner: true, turns:0
   };
   history = [];
@@ -344,12 +383,30 @@ function doneWriting(){
 function fillHat(){
   let hat=[]; S.players.forEach((p,i)=>p.written.forEach(f=>hat.push({text:f, by:i})));
   const need = S.per*S.players.length - hat.length;
-  if(need>0){
-    const used = new Set(hat.map(h=>h.text.toLowerCase()));
-    const deck = shuffle(BUILTIN.filter(f=>!used.has(f.toLowerCase())));
-    for(let i=0;i<need;i++) hat.push({text: deck[i % deck.length], by:-1});
-  }
+  if(need>0) deckPick(need, new Set(hat.map(h=>h.text.toLowerCase()))).forEach(f=>hat.push({...f, by:-1}));
   S.hat = shuffle(hat);
+}
+// Pick `need` flags from the built-in deck, mixed by spice level, preferring ones not seen in recent games.
+function deckPick(need, exclude){
+  const w = SPICE[S.spice||"mixed"], levels=[1,2,3,4];
+  const tot = levels.reduce((s,l)=>s+w[l],0);
+  const counts = {}; let assigned=0;
+  levels.forEach(l=>{ counts[l]=Math.floor(need*w[l]/tot); assigned+=counts[l]; });
+  while(assigned<need){ let r=Math.random()*tot; for(const l of levels){ r-=w[l]; if(r<0){ counts[l]++; break; } } assigned++; }
+  let seen = loadSeen();
+  const ok = f => !exclude.has(f.text.toLowerCase());
+  const order = list => [...shuffle(list.filter(f=>!seen.has(f.text))), ...shuffle(list.filter(f=>seen.has(f.text)))];
+  const out=[]; const taken=new Set(); let carry=0;
+  levels.forEach(l=>{
+    const pool = order(ALL_FLAGS.filter(f=>f.lvl===l && ok(f)));
+    const take = pool.slice(0, counts[l]+carry);
+    carry = counts[l]+carry-take.length;
+    take.forEach(f=>{ out.push(f); taken.add(f.text); });
+  });
+  if(carry>0) order(ALL_FLAGS.filter(f=>ok(f)&&!taken.has(f.text))).slice(0,carry).forEach(f=>out.push(f));
+  if(seen.size + out.length > ALL_FLAGS.length*0.75) seen = new Set();
+  out.forEach(f=>seen.add(f.text)); saveSeen(seen);
+  return out;
 }
 
 /* ---------------- PLAY ---------------- */
@@ -360,17 +417,33 @@ function undo(){ if(!history.length) return toast("Nothing to undo"); S=JSON.par
 function curPlayer(){ return S.players[S.turn]; }
 function curPartner(p){ const last=p.partners[p.partners.length-1]; return last && last.status==="dating" ? last : null; }
 
-function randomPartner(){ $("partnerName").value = `${pick(NAMES)}, ${20+Math.floor(Math.random()*30)}, ${pick(VIBES)}`; }
+const firstName = s => (s||"").split(",")[0].trim().toLowerCase();
+function takenNames(){ return new Set([...(S.usedNames||[]), ...S.players.map(x=>firstName(x.name))]); }
+// A partner of the opposite sex whose name nobody in this game has dated yet.
+function freshPartner(p){
+  const pool = p.gender==="f" ? MALE_NAMES : FEMALE_NAMES;
+  const taken = takenNames();
+  let avail = pool.filter(n=>!taken.has(n.toLowerCase()));
+  if(!avail.length) avail = pool.map(n=>n+" II").filter(n=>!taken.has(n.toLowerCase()));
+  return `${pick(avail)}, ${22+Math.floor(Math.random()*24)}, ${pick(VIBES)}`;
+}
+function randomPartner(){ $("partnerName").value = freshPartner(curPlayer()); }
 
 function drawFlag(){
   if(S.current) return;
   if(!S.hat.length) return finish();
-  snapshot();
   const p = curPlayer();
   let partner = curPartner(p);
+  let newName = null;
   if(!partner){
-    let name = $("partnerName").value.trim() || `${pick(NAMES)}, ${pick(VIBES)}`;
-    partner = { name, flags:[], status:"dating" };
+    newName = $("partnerName").value.trim() || freshPartner(p);
+    if(takenNames().has(firstName(newName))) return toast(`Someone already dated ${newName.split(",")[0]} this game — pick someone new 😉`);
+  }
+  snapshot();
+  if(newName){
+    S.usedNames = S.usedNames || [];
+    S.usedNames.push(firstName(newName));
+    partner = { name:newName, flags:[], status:"dating" };
     p.partners.push(partner);
     $("partnerName").value="";
   }
@@ -401,6 +474,7 @@ function renderPlay(){
 
   const newRel = !partner && !S.current;
   $("partnerSetup").classList.toggle("hidden", !newRel);
+  $("partnerName").placeholder = p.gender==="f" ? "e.g. Marco, 34, sommelier" : "e.g. Chloé, 31, architect";
 
   const info=$("datingInfo");
   if(partner){
@@ -412,7 +486,7 @@ function renderPlay(){
   const ft=$("flagText"), num=$("flagNum");
   if(S.current){
     ft.textContent = S.current.flag.text; ft.classList.remove("placeholder");
-    num.textContent = S.current.flag.by>=0 ? `written by ${S.players[S.current.flag.by].name}` : "from the deck";
+    num.textContent = S.current.flag.by>=0 ? `✍️ written by ${S.players[S.current.flag.by].name}` : (LEVEL_LABEL[S.current.flag.lvl] || "from the deck");
     const sp=$("storyPrompt");
     const many = partner && partner.flags.length>1;
     sp.innerHTML = `🎙️ <b>Tell the story!</b> ${many
@@ -474,13 +548,13 @@ function finish(){
 }
 function endEarly(){ if(confirm("End the game now and see the results?")) finish(); }
 
-function rematch(){
-  setup = { players:S.players.map(p=>p.name), mode:S.mode, per:S.per };
-  startSetup();
+function setupFromState(){
+  return { players:S.players.map(p=>p.name), genders:S.players.map(p=>p.gender||guessGender(p.name)), manual:S.players.map(()=>true), mode:S.mode, per:S.per, spice:S.spice||"mixed" };
 }
+function rematch(){ setup = setupFromState(); startSetup(); }
 function newGame(skipConfirm){
   if(!skipConfirm && !confirm("Start a new game? Current progress will be lost.")) return;
-  if(S) setup = { players:S.players.map(p=>p.name), mode:S.mode, per:S.per };
+  if(S) setup = setupFromState();
   S=null; history=[]; clearSave(); renderSetup(); show("setup");
 }
 
@@ -489,7 +563,9 @@ function newGame(skipConfirm){
   const saved = load();
   if(saved && saved.players){
     S = saved;
-    setup = { players:S.players.map(p=>p.name), mode:S.mode, per:S.per };
+    S.usedNames = S.usedNames || S.players.flatMap(p=>p.partners.map(x=>firstName(x.name)));
+    S.players.forEach(p=>{ if(!p.gender) p.gender=guessGender(p.name); });
+    setup = setupFromState();
     if(S.phase==="writing"){ showHandoff(); return; }
     if(S.phase==="play"){ renderPlay(); show("play"); return; }
     if(S.phase==="results"){ finish(); return; }
