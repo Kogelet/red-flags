@@ -75,6 +75,22 @@ input[type=text]:focus{border-color:var(--accent2)}
 .story .p{font-size:14px;padding:8px 12px;background:rgba(0,0,0,.2);border-radius:12px;margin-bottom:6px;line-height:1.4}
 .story .p ul{margin:4px 0 0;padding-left:18px;color:var(--muted)}
 .hidden{display:none!important}
+.pencil{position:absolute;top:8px;right:8px;background:none;border:none;color:var(--muted);font-size:18px;padding:6px 8px;cursor:pointer;border-radius:10px}
+.pencil:hover{background:var(--soft)}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;z-index:20;padding:16px}
+.sheet .card{width:min(560px,100%);margin:0}
+.sheet textarea,.erow input{width:100%;background:rgba(0,0,0,.25);border:1px solid var(--border);color:var(--text);border-radius:14px;padding:12px 14px;font-size:16px;font-family:inherit;outline:none;resize:vertical}
+.sheet textarea:focus,.erow input:focus{border-color:var(--accent2)}
+.sheet .row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.sheet .row .btn{flex:1}
+.etabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+.etabs button{padding:10px 0;font-size:14px}
+.etabs button.on{background:linear-gradient(135deg,var(--accent),#d81b60);border-color:transparent;color:#fff}
+.elist{display:flex;flex-direction:column;gap:6px}
+.erow{display:flex;gap:6px;align-items:center}
+.erow input{padding:10px 12px}
+.erow.off input{text-decoration:line-through;opacity:.5}
+.erow .tag{font-size:11px;color:var(--accent2);font-weight:800;white-space:nowrap}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2b1f33;border:1px solid var(--border);padding:12px 18px;border-radius:14px;font-size:15px;box-shadow:0 10px 30px rgba(0,0,0,.4);z-index:10;max-width:90vw;text-align:center}
 .confetti{position:fixed;top:-20px;font-size:26px;pointer-events:none;animation:fall linear forwards;z-index:9}
 @keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
@@ -100,6 +116,7 @@ input[type=text]:focus{border-color:var(--accent2)}
       <div class="muted small" style="margin-top:10px">They start normal and get crazier as the game goes on 🌶️</div>
     </div>
     <button class="btn primary full big" onclick="startGame()">Start 🚩</button>
+    <div class="bottom" style="margin-top:8px"><button class="link" onclick="openEditor()">✏️ Edit red flags</button></div>
     <details class="rules card" style="margin-top:14px">
       <summary>How to play ▾</summary>
       <ol>
@@ -125,6 +142,7 @@ input[type=text]:focus{border-color:var(--accent2)}
 
       <div class="flag-card" id="flagCard">
         <div class="lvl" id="flagLvl"></div>
+        <button class="pencil hidden" id="pencil" onclick="openSheet()" aria-label="Edit this red flag">✏️</button>
         <div id="flagText" class="flag-text placeholder">Tap to draw</div>
       </div>
       <div class="prompt hidden" id="storyPrompt"></div>
@@ -151,6 +169,19 @@ input[type=text]:focus{border-color:var(--accent2)}
     </div>
   </section>
 
+  <!-- EDIT DECK -->
+  <section id="screen-edit" class="hidden">
+    <div class="card">
+      <h2>✏️ Edit red flags</h2>
+      <div class="muted small" style="margin-bottom:12px">Changes save on this phone. Tap a red flag to rewrite it, ✕ to take it out of the game.</div>
+      <div class="etabs" id="eTabs"></div>
+      <div class="erow" style="margin-bottom:12px"><input id="eNew" maxlength="120" placeholder="Add a new red flag…" onkeydown="if(event.key==='Enter')addCustom()" /><button class="btn" onclick="addCustom()">Add</button></div>
+      <div class="elist" id="eList"></div>
+    </div>
+    <button class="btn primary full big" onclick="closeEditor()">Done</button>
+    <div class="bottom"><button class="link" onclick="resetCustom()">↺ Reset all to original</button></div>
+  </section>
+
   <!-- RESULTS -->
   <section id="screen-results" class="hidden">
     <div class="card">
@@ -165,6 +196,18 @@ input[type=text]:focus{border-color:var(--accent2)}
   </section>
 </div>
 
+<div class="sheet hidden" id="sheet">
+  <div class="card">
+    <h2>✏️ Edit this red flag</h2>
+    <textarea id="sheetText" rows="3" maxlength="120"></textarea>
+    <div class="row">
+      <button class="btn primary" onclick="sheetSave()">Save</button>
+      <button class="btn" onclick="sheetRemove()">Remove from game</button>
+      <button class="btn" onclick="closeSheet()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script src="data.js"></script>
 <script>
 const DISCOVER = ["on your first date","at their parents’ house","on a romantic weekend in Zermatt","when you checked their phone (oops)","at your best friend’s wedding","during a power cut","at the airport","on holiday in Mykonos","when their ex texted you","while assembling IKEA furniture together","at a fondue night","on their birthday","when you moved in together","at 3 a.m.","in front of your entire family","on a boat on Lake Geneva","at their office Christmas party","on a ski lift"];
@@ -172,7 +215,8 @@ const LEVEL_LABEL = {1:"🚩 Normal",2:"🚩🚩 Weird",3:"🚩🚩🚩 Absurd",
 const LEVEL_UP = {2:"🌶️ Things are getting weird…",3:"🌶️🌶️ Now it's getting absurd…",4:"🦇 Completely unhinged from here on!"};
 
 const KEY = "redFlagsGameV3";
-const SEEN_KEY = "redFlagsSeenV3";
+const SEEN_KEY = "redFlagsSeenV4";
+const CUSTOM_KEY = "redFlagsCustom";
 let S = null;
 let setup = { players:["",""], genders:["m","f"], manual:[false,false], per:15 };
 
@@ -184,7 +228,7 @@ function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} 
 function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||"null"); }catch(e){ return null; } }
 function toast(msg){ document.querySelectorAll(".toast").forEach(t=>t.remove()); const t=document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2400); }
 function confetti(chars){ for(let i=0;i<12;i++){ const c=document.createElement("div"); c.className="confetti"; c.textContent=pick(chars); c.style.left=Math.random()*100+"vw"; c.style.animationDuration=(1.6+Math.random()*1.6)+"s"; c.style.animationDelay=(Math.random()*.4)+"s"; document.body.appendChild(c); setTimeout(()=>c.remove(),3800);} }
-function show(screen){ ["setup","play","results"].forEach(s=>$("screen-"+s).classList.toggle("hidden", s!==screen)); window.scrollTo({top:0,behavior:"smooth"}); }
+function show(screen){ ["setup","play","results","edit"].forEach(s=>$("screen-"+s).classList.toggle("hidden", s!==screen)); window.scrollTo({top:0,behavior:"smooth"}); }
 
 /* ---------- gender guess from first name (tap He/She to correct) ---------- */
 const KNOWN_F = new Set(["alla","anna","maria","marie","sophie","chloe","chloé","lea","léa","emma","olga","irina","elena","julia","laura","sarah","camille","manon","ines","inès","zoe","zoé","noemie","noémie","anouk","carmen","yasmine","gloria","lucie","claire","alice","nina","eva","mia","lisa","kate","jane","ani","anahit","lilit","mariam","nare","gohar","hasmik","armine","astghik","siranush","gayane","karin","ruth","ingrid","astrid","esther","rachel","miriam","isabel","isabelle","nicole","michelle","danielle","catherine","caroline","charlotte","juliette","margaux","céline","celine","nathalie","sandrine","corinne","mélanie","melanie","aurélie","aurelie","delphine","sabine","beatrice","béatrice","ophélie","romy","selma","freya","rose","grace","kim","jess","jessica","amy","lily","chantal","agnès","agnes","solène","solene","maud","gwen","ketevan","nune","lusine","tatev","margarit","susanna","kristine"]);
@@ -219,17 +263,41 @@ function removePlayer(i){ ["players","genders","manual"].forEach(k=>setup[k].spl
 /* ---------- DECK: no repeats in a game; across games, unseen flags first ---------- */
 function loadSeen(){ try{ return new Set(JSON.parse(localStorage.getItem(SEEN_KEY)||"[]")); }catch(e){ return new Set(); } }
 function saveSeen(set){ try{ localStorage.setItem(SEEN_KEY, JSON.stringify([...set])); }catch(e){} }
+/* ---------- your own edits (saved on this device) ---------- */
+function loadCustom(){ try{ const c=JSON.parse(localStorage.getItem(CUSTOM_KEY)||"null"); if(c) return {edit:c.edit||{},removed:c.removed||[],added:c.added||[]}; }catch(e){} return {edit:{},removed:[],added:[]}; }
+let CUSTOM = loadCustom();
+function saveCustom(){ try{ localStorage.setItem(CUSTOM_KEY, JSON.stringify(CUSTOM)); }catch(e){ toast("Couldn't save on this device"); } }
+// every red flag of a level, with your edits: {key, text, lvl, off, custom}
+function deckLevel(l, withOff){
+  const out=[];
+  CUSTOM.added.filter(a=>a.lvl===l).forEach(a=>out.push({key:"a:"+a.id, text:a.text, lvl:l, off:false, custom:"new"}));
+  FLAGS[l].forEach(t=>{ const off=CUSTOM.removed.includes(t); if(off && !withOff) return;
+    out.push({key:t, text:CUSTOM.edit[t]||t, lvl:l, off, custom:CUSTOM.edit[t]?"edited":""}); });
+  return out;
+}
+function setText(key, text){
+  text=text.trim(); if(!text) return;
+  if(key.startsWith("a:")){ const a=CUSTOM.added.find(x=>"a:"+x.id===key); if(a) a.text=text; }
+  else if(text===key) delete CUSTOM.edit[key]; else CUSTOM.edit[key]=text;
+  saveCustom();
+}
+function setRemoved(key, off){
+  if(key.startsWith("a:")){ if(off) CUSTOM.added=CUSTOM.added.filter(x=>"a:"+x.id!==key); }
+  else { CUSTOM.removed=CUSTOM.removed.filter(t=>t!==key); if(off) CUSTOM.removed.push(key); }
+  saveCustom();
+}
+
 function buildHat(total){
   // equal share of each level; the draw order goes 1 → 4, so the game escalates
   const base=Math.floor(total/4), counts={1:base,2:base,3:base,4:base};
   for(let r=total-base*4, l=2; r>0; r--, l++) counts[l>3?(l=2):l]++;
   const seen=loadSeen(); const ordered=[];
   [1,2,3,4].forEach(l=>{
-    const all=FLAGS[l];
-    let fresh=all.filter(f=>!seen.has(f));
-    if(fresh.length<counts[l]){ all.forEach(f=>seen.delete(f)); fresh=[...all]; } // this level is used up → start its cycle again
+    const all=deckLevel(l);
+    let fresh=all.filter(f=>!seen.has(f.key));
+    if(fresh.length<counts[l]){ all.forEach(f=>seen.delete(f.key)); fresh=[...all]; } // this level is used up → start its cycle again
     const chosen=shuffle(fresh).slice(0,counts[l]);
-    chosen.forEach(f=>{ seen.add(f); ordered.push({text:f,lvl:l}); });
+    chosen.forEach(f=>{ seen.add(f.key); ordered.push({text:f.text,lvl:l,key:f.key}); });
   });
   saveSeen(seen);
   return ordered.reverse(); // pop() takes from the end → level 1 first
@@ -304,6 +372,7 @@ function renderPlay(){
   if(S.current){
     ft.textContent=S.current.flag.text; ft.classList.remove("placeholder");
     $("flagLvl").textContent=LEVEL_LABEL[S.current.flag.lvl];
+    $("pencil").classList.toggle("hidden", !S.current.flag.key);
     const first = partner.flags.length===1;
     $("storyPrompt").innerHTML = first
       ? `🎙️ Who is ${esc(short(partner.name))}, how did you meet — and how did you find out? Maybe ${esc(S.current.where)}…`
@@ -311,7 +380,7 @@ function renderPlay(){
     $("storyPrompt").classList.remove("hidden");
   } else {
     ft.textContent = partner ? `Brace yourself, ${p.name}…` : `Who will you date?`;
-    ft.classList.add("placeholder"); $("flagLvl").textContent=""; $("storyPrompt").classList.add("hidden");
+    ft.classList.add("placeholder"); $("flagLvl").textContent=""; $("pencil").classList.add("hidden"); $("storyPrompt").classList.add("hidden");
   }
   $("drawBtn").classList.toggle("hidden", !!S.current);
   $("drawBtn").textContent = partner ? "🚩 Draw a red flag" : "💘 Meet someone & draw";
@@ -349,6 +418,43 @@ function endEarly(){ if(confirm("End the game now and see the results?")) finish
 function setupFromState(){ return { players:S.players.map(p=>p.name), genders:S.players.map(p=>p.gender), manual:S.players.map(()=>true), per:S.per }; }
 function playAgain(){ setup=setupFromState(); S=null; try{localStorage.removeItem(KEY);}catch(e){} renderSetup(); show("setup"); }
 function newGame(){ if(confirm("Start a new game? This one will be lost.")) playAgain(); }
+
+/* ---------- edit the current card ---------- */
+function openSheet(){ if(!S.current) return; $("sheetText").value=S.current.flag.text; $("sheet").classList.remove("hidden"); setTimeout(()=>$("sheetText").focus(),50); }
+function closeSheet(){ $("sheet").classList.add("hidden"); }
+function sheetSave(){
+  const t=$("sheetText").value.trim(); if(!t) return;
+  const f=S.current.flag; setText(f.key, t);
+  const partner=curPartner(curPlayer()); if(partner) partner.flags[partner.flags.length-1]=t;
+  f.text=t; save(); closeSheet(); renderPlay(); toast("Saved ✏️");
+}
+function sheetRemove(){ setRemoved(S.current.flag.key, true); closeSheet(); toast("Removed. It won't come up again."); }
+
+/* ---------- edit deck screen ---------- */
+let eLvl=1, eFrom="setup";
+function openEditor(){ eFrom = S && S.phase==="play" ? "play" : "setup"; renderEditor(); show("edit"); }
+function closeEditor(){ if(eFrom==="play"){ renderPlay(); show("play"); } else { renderSetup(); show("setup"); } }
+function renderEditor(){
+  $("eTabs").innerHTML=[1,2,3,4].map(l=>`<button class="btn${l===eLvl?" on":""}" onclick="eLvl=${l};renderEditor()">${"🚩".repeat(l)}<br><span class="small">${deckLevel(l).length}</span></button>`).join("");
+  const items=deckLevel(eLvl,true).sort((a,b)=>(a.off?1:0)-(b.off?1:0));
+  $("eList").innerHTML="";
+  items.forEach(f=>{
+    const row=document.createElement("div"); row.className="erow"+(f.off?" off":"");
+    const inp=document.createElement("input"); inp.value=f.text; inp.maxLength=120; inp.disabled=f.off;
+    inp.onchange=()=>{ setText(f.key, inp.value); renderEditor(); };
+    row.appendChild(inp);
+    if(f.custom){ const t=document.createElement("span"); t.className="tag"; t.textContent=f.custom==="new"?"NEW":"EDITED"; row.appendChild(t); }
+    const b=document.createElement("button"); b.className="xbtn"; b.textContent=f.off?"↺":"✕"; b.setAttribute("aria-label", f.off?"Put back":"Remove");
+    b.onclick=()=>{ setRemoved(f.key, !f.off); renderEditor(); };
+    row.appendChild(b); $("eList").appendChild(row);
+  });
+}
+function addCustom(){
+  const t=$("eNew").value.trim(); if(!t) return;
+  CUSTOM.added.unshift({id:Date.now().toString(36), text:t, lvl:eLvl}); saveCustom();
+  $("eNew").value=""; renderEditor(); toast("Added ✅");
+}
+function resetCustom(){ if(!confirm("Undo all your edits and go back to the original red flags?")) return; CUSTOM={edit:{},removed:[],added:[]}; saveCustom(); renderEditor(); }
 
 /* ---------- BOOT ---------- */
 (function(){
